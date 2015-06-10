@@ -35,6 +35,7 @@ Additional parameters:
 * `--no-browser` - suppress automatic web browser launching
 * `--quiet` - suppress logging
 * `--open=PATH` - launch browser to PATH instead of server root
+* `--port=8081` - open with port
 
 How it works
 ------------
