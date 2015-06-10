@@ -26,7 +26,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/tapio/jspm-server.git"
+    "url": "https://github.com/geelen/jspm-server.git"
   },
   "engines": {
     "node": ">=0.8.0"
