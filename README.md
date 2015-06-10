@@ -1,34 +1,20 @@
 [![view on npm](http://img.shields.io/npm/v/jspm-server.svg)](https://www.npmjs.org/package/jspm-server)
 [![npm module downloads per month](http://img.shields.io/npm/dm/jspm-server.svg)](https://www.npmjs.org/package/jspm-server)
 
-To dev on this:
-```
-watchify injected.src.js -t babelify --outfile injected.js
-```
+# JSPM Server
 
-JSPM Server
-===========
-
-This is a little development server for devving on JSPM sites. It's based on (and owes 99% of its smarts) to @tapio's excellent [live-server](https://github.com/tapio/live-server).
-
-If you don't need JSPM stuff, use live-server, and if you don't need live-reloading at all, use [http-server](https://www.npmjs.com/package/http-server) or `python -m SimpleHTTPServer` 
+This is a development server for JSPM static sites. It's based on @tapio's excellent [live-server](https://github.com/tapio/live-server), which I used for a long time very happily.
 
 
-Installation
-------------
+## Installation
 
-You need node.js and npm. You should probably install this globally.
-
-**Npm way**
+You'll need NodeJS and NPM, then to install the `jspm-server` command-line utility globally:
 
 	npm install -g jspm-server
 
-Usage from command line
------------------------
+## Usage from command line
 
-Issue the command `jspm-server` in your project's directory. Alternatively you can add the path to serve as a command line parameter.
-
-You can configure the port to be used by the server by adding the `--port=<number>` runtime option when invoking jspm-server, or by setting the `PORT` environment variable prior to running jspm-server.
+Run `jspm-server` from your project's directory.
 
 Additional parameters:
 
@@ -37,18 +23,46 @@ Additional parameters:
 * `--open=PATH` - launch browser to PATH instead of server root
 * `--port=8081` - open with port
 
-How it works
-------------
+## How it works
 
-This is a variant of `live-server` that uses a payload of [SystemJS](https://github.com/systemjs/systemjs)-aware hooks, and looks for plugins that export a `hotReload` function. It then cache-busts the resource and `System.import`s it. The logic all lives in [ChangeHandler](https://github.com/geelen/jspm-server/blob/master/lib/change-handler.js). At the moment, there are two plugins that support live-reloading, and they're mega hacks (both of them reload as a side-effect, and aren't properly wired into the SystemJS loader). They are:
+**Note:** you must have `System.trace = true` set in your HTML or config.js file for live-reloading to work.
 
-- [postcss](https://github.com/geelen/plugin-postcss)
-- [jsx](https://github.com/geelen/typeslab/blob/master/src/jsx.js)
+You can mark any ES6 file as being live-reloadable by adding the following line:
+
+```js
+export let __hotReload = true
+```
+
+This is a short hand for exporting `__hotReload` as a named export (the full version is `let __hotReload = true; export { __hotReload };`)
+
+Setting `__hotReload = true` indicates the following:
+
+- This file can be safely reloaded (the new file will be simply executed)
+- On reload:
+  - if the new file changes its exports (using `===`), the reload event will *propagate*
+  - if the new file's exports are equal, the reload will stop
+   
+If your file exports something new on each execution (such as a `class`, `function` or nested data structure), setting `__hotReload = true` will cause *all dependents of this file* to be reloaded as well. To override that behaviour, you can declare `__hotReload` as a function:
+
+```js
+export function __hotReload() {
+  // return true has the same meaning as above - propagate if and when the exports change
+  // return false halts propagation
+}
+```
+
+This function runs directly after the new module is executed, allowing you to clean up any state in this file that is no longer relevant. That might be removing event listeners, canceling any future-scheduled work, that sort of thing.
+
+## Loaders
+
+Loaders can inject a `__hotReload` export by appending to the source in a `fetch`. The [css](https://github.com/geelen/jspm-loader-css) loader does this, so all CSS files are live-reloadable.
 
 
 Version history
 ---------------
 
+* v0.1.0
+  - Changed the format of live-reloading, from requiring the plugin to define a `hotReload` handler to deciding on a per-file basis. Propagation is now far more powerful and predictable. `System.trace = true` is now required.
 * v0.0.3
 	- Added dependency-tracking, once a file has been live-reloaded, attempt to live-reload all of its dependents.
 	  Note: requires `System.trace = true` to be in your project ahead of your initial `System.import` to take effect.
