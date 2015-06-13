@@ -137,8 +137,14 @@ var ChangeHandler = (function () {
   }, {
     key: 'reload',
     value: function reload(path, reason) {
-      //console.info( `Change detected in ${path} that cannot be handled gracefully: ${reason}` )
-      window.location.reload();
+      console.info('Change detected in ' + path + ' that cannot be handled gracefully: ' + reason);
+      console.info('Reloading in 2...');
+      setTimeout(function () {
+        return console.info('1...');
+      }, 1000);
+      setTimeout(function () {
+        return window.location.reload();
+      }, 2000);
     }
   }]);
 
