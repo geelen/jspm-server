@@ -72,7 +72,8 @@ var ChangeHandler = (function () {
             var path = _deps$dep$split2[0];
             var loader = _deps$dep$split2[1];
 
-            _this2.depMap.get(path).push(m.split('!')[0]);
+            var map = _this2.depMap.get(path);
+            if (map) map.push(m.split('!')[0]);
           });
         });
       }
