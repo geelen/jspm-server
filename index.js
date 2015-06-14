@@ -160,7 +160,7 @@ LiveServer.start = function (options) {
       var serveURL = "http://127.0.0.1:" + port;
       console.log(('Serving "' + root + '" at ' + serveURL).green);
     } else {
-      console.log('Starting a proxy server for ' + options.proxyServer + ' at ' + 'http://localhost:' + options.port);
+      console.log(('Starting a proxy server for ' + options.proxyServer + ' at ' + 'http://localhost:' + options.port).green);
     }
   }
 
