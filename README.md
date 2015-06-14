@@ -62,7 +62,9 @@ Loaders can inject a `__hotReload` export by appending to the source in a `fetch
 Version history
 ---------------
 
-* v0.1.0
+* v0.1.3
+  - Ensured System.baseURL is taken into consideration.
+* **v0.1.0**
   - Changed the format of live-reloading, from requiring the plugin to define a `hotReload` handler to deciding on a per-file basis. Propagation is now far more powerful and predictable. `System.trace = true` is now required.
 * v0.0.3
 	- Added dependency-tracking, once a file has been live-reloaded, attempt to live-reload all of its dependents.
