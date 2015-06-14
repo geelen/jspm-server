@@ -4,7 +4,8 @@ var liveServer = require("./index");
 var opts = {
 	port: process.env.PORT,
 	open: true,
-	logLevel: 2
+	logLevel: 2,
+	extensions: []
 };
 
 for (var i = process.argv.length-1; i >= 2; --i) {
@@ -24,6 +25,19 @@ for (var i = process.argv.length-1; i >= 2; --i) {
 		}
 		opts.open = path;
 		process.argv.splice(i, 1);
+	}
+	else if (arg.indexOf("--only=") > -1) {
+		var extensions = []
+		var extArgs = arg.substring(7);
+		extArgs = extArgs.replace(/\./g, '');
+		if(extArgs) {
+			extensions = extArgs.split(/,\s?/);
+		}
+		if(extensions.length) {
+			opts.extensions = extensions;
+			console.log(extensions)
+			process.argv.splice(i, 1);
+		}
 	}
 	else if (arg == "--no-browser") {
 		opts.open = false;
