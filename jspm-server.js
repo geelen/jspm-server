@@ -35,7 +35,6 @@ for (var i = process.argv.length-1; i >= 2; --i) {
 		}
 		if(extensions.length) {
 			opts.extensions = extensions;
-			console.log(extensions)
 			process.argv.splice(i, 1);
 		}
 	}
