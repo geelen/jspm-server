@@ -2,6 +2,7 @@
 var liveServer = require("./index");
 
 var opts = {
+	proxyServer: null,
 	port: process.env.PORT,
 	open: true,
 	logLevel: 2
@@ -17,6 +18,12 @@ for (var i = process.argv.length-1; i >= 2; --i) {
 			process.argv.splice(i, 1);
 		}
 	}
+
+	else if (arg.indexOf("--proxy=") > -1) {
+		opts.proxyServer = arg.substring(8);
+		process.argv.splice(i, 1);
+	}
+
 	else if (arg.indexOf("--open=") > -1) {
 		var path = arg.substring(7);
 		if (path.indexOf('/') != 0) {
@@ -32,7 +39,7 @@ for (var i = process.argv.length-1; i >= 2; --i) {
 		opts.logLevel = 0;
 		process.argv.splice(i, 1);
 	} else if (arg == "--help" || arg == "-h") {
-		console.log('Usage: jspm-server [-h|--help] [-q|--quiet] [--port=PORT] [--open=PATH] [--no-browser] [PATH]');
+		console.log('Usage: jspm-server [-h|--help] [-q|--quiet] [--port=PORT] [--open=PATH] [--proxy=PROXY_PATH] [--no-browser] [PATH]');
 		process.exit();
 	}
 }
