@@ -22,6 +22,7 @@ Additional parameters:
 * `--quiet` - suppress logging
 * `--open=PATH` - launch browser to PATH instead of server root
 * `--port=8081` - open with port
+* `--proxy=http://localhost:8080` - proxy a running server
 
 ## How it works
 
