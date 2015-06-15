@@ -66,6 +66,8 @@ When proxying a server, be sure to either start `jspm-server` from your static a
 Version history
 ---------------
 
+* v0.1.4
+  - Proxying support is added. Thanks @kevrom!
 * v0.1.3
   - Ensured System.baseURL is taken into consideration.
 * **v0.1.0**
