@@ -58,6 +58,10 @@ This function runs directly after the new module is executed, allowing you to cl
 
 Loaders can inject a `__hotReload` export by appending to the source in a `fetch`. The [css](https://github.com/geelen/jspm-loader-css) loader does this, so all CSS files are live-reloadable.
 
+## Proxying
+
+When proxying a server, be sure to either start `jspm-server` from your static assets directory, or utilize the root directory argument, e.g. `jspm-server --proxy=http://localhost:8000 --port=8001 public/src`
+
 
 Version history
 ---------------
