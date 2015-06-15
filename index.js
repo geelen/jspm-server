@@ -11,6 +11,7 @@ var fs = require('fs'),
   es = require("event-stream"),
   watchr = require('watchr'),
   chokidar = require('chokidar'),
+  foxy = require('foxy'),
   ws;
 
 var INJECTED_CODE = "<script>" + fs.readFileSync(__dirname + "/injected.js", "utf8") + "</script>";
@@ -100,13 +101,35 @@ LiveServer.start = function (options) {
     console.log(("200.html detected, serving it for all URLs that have no '.' (html5mode)").yellow)
   }
 
+  var server;
   // Setup a web server
-  var app = connect()
-    .use(staticServer(root, html5mode)) // Custom static server
-    .use(connect.directory(root, {icons: true}));
-  if (logLevel >= 2)
-    app.use(connect.logger('dev'));
-  var server = http.createServer(app).listen(port, host);
+  if (!options.proxyServer) {
+    var app = connect()
+      .use(staticServer(root, html5mode)) // Custom static server
+      .use(connect.directory(root, {icons: true}));
+    if (logLevel >= 2)
+      app.use(connect.logger('dev'));
+    server = http.createServer(app).listen(port, host);
+  } else {
+    var foundBody = false;
+    var proxyOpts = {
+      rules: [
+        {
+          match: /<\/body>/i,
+          fn: function(match) {
+            if (!foundBody) {
+              foundBody = true;
+              return INJECTED_CODE + "</body>";
+            } else {
+              return match;
+            }
+          }
+        }
+      ]
+    };
+	server = foxy(options.proxyServer, proxyOpts).listen(options.port || 8080);
+  }
+
   // WebSocket
   server.addListener('upgrade', function (request, socket, head) {
     ws = new WebSocket(request, socket, head);
@@ -114,9 +137,10 @@ LiveServer.start = function (options) {
       ws.send(JSON.stringify({type: 'connected'}));
     };
   });
+
   // Setup file watcher
   chokidar.watch(root, {
-    ignored: /[\/\\]\./,
+    ignored: /([\/\\]\.)|(node_modules)/,
     ignoreInitial: true,
     ignorePermissionErrors: true
   }).on('all', function (event, filePathOrErr) {
@@ -129,10 +153,16 @@ LiveServer.start = function (options) {
       if (logLevel >= 1) console.log(("Change detected: " + relativePath).cyan);
     }
   });
+
   // Output
-  var serveURL = "http://127.0.0.1:" + port;
-  if (logLevel >= 1)
-    console.log(('Serving "' + root + '" at ' + serveURL).green);
+  if (logLevel >= 1) {
+    if (!options.proxyServer) {
+      var serveURL = "http://127.0.0.1:" + port;
+      console.log(('Serving "' + root + '" at ' + serveURL).green);
+    } else {
+      console.log(('Starting a proxy server for ' + options.proxyServer + ' at ' + 'http://localhost:' + options.port).green);
+    }
+  }
 
   // Launch browser
   if (openPath !== null)

@@ -22,6 +22,7 @@ Additional parameters:
 * `--quiet` - suppress logging
 * `--open=PATH` - launch browser to PATH instead of server root
 * `--port=8081` - open with port
+* `--proxy=http://localhost:8080` - proxy a running server
 
 ## How it works
 
@@ -56,6 +57,10 @@ This function runs directly after the new module is executed, allowing you to cl
 ## Loaders
 
 Loaders can inject a `__hotReload` export by appending to the source in a `fetch`. The [css](https://github.com/geelen/jspm-loader-css) loader does this, so all CSS files are live-reloadable.
+
+## Proxying
+
+When proxying a server, be sure to either start `jspm-server` from your static assets directory, or utilize the root directory argument, e.g. `jspm-server --proxy=http://localhost:8000 --port=8001 public/src`
 
 
 Version history
