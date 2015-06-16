@@ -23,7 +23,8 @@ Additional parameters:
 * `--open=PATH` - launch browser to PATH instead of server root
 * `--port=8081` - open with port
 * `--proxy=http://localhost:8080` - proxy a running server
-* `--onlyexts=""` - watch only files with the specified extensions
+* `--only-exts=""` - watch only files with the specified extensions
+* `--ignore-exts=""` - exclude files with the specified extensions
 
 ## How it works
 
