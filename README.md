@@ -23,6 +23,7 @@ Additional parameters:
 * `--open=PATH` - launch browser to PATH instead of server root
 * `--port=8081` - open with port
 * `--proxy=http://localhost:8080` - proxy a running server
+* `--onlyexts=""` - watch only files with the specified extensions
 
 ## How it works
 
@@ -42,7 +43,7 @@ Setting `__hotReload = true` indicates the following:
 - On reload:
   - if the new file changes its exports (using `===`), the reload event will *propagate*
   - if the new file's exports are equal, the reload will stop
-   
+
 If your file exports something new on each execution (such as a `class`, `function` or nested data structure), setting `__hotReload = true` will cause *all dependents of this file* to be reloaded as well. To override that behaviour, you can declare `__hotReload` as a function:
 
 ```js
@@ -62,6 +63,21 @@ Loaders can inject a `__hotReload` export by appending to the source in a `fetch
 
 When proxying a server, be sure to either start `jspm-server` from your static assets directory, or utilize the root directory argument, e.g. `jspm-server --proxy=http://localhost:8000 --port=8001 public/src`
 
+## Include only extensions
+
+To make `jspm-server` only react to wanted extensions, use the `--only-exts` option. This is useful, for example, while writing Sass, as `jspm-server` will do a hard reload when it encounters an `scss` file.
+
+Usage example: `jspm-server --only-exts=".js, .jsx, .html, .css"`
+
+Note that you do not have to include a space after the delimiting comma. The periods in the extension names are likewise optional.
+
+## Ignore extensions
+
+This is a reverse of the `--only-exts` option. To make `jspm-server` exclude certain extensions from the reloading, use `--ignore-exts=""` and specify the extensions you want to ignore.
+
+Usage example: Usage example: `jspm-server --ignore-exts=".scss, .less"`
+
+The ignore filter is executed before the include filter, so if you specify an identical extension in both filters, it will be excluded.
 
 Version history
 ---------------

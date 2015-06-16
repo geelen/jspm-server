@@ -92,7 +92,8 @@ LiveServer.start = function (options) {
   var host = options.host || '0.0.0.0';
   var port = options.port || 8080;
   var root = options.root || process.cwd();
-  var extensions = options.extensions || []
+  var inclExtensions = options.inclExtensions || []
+  var exclExtensions = options.exclExtensions || []
   var logLevel = options.logLevel === undefined ? 2 : options.logLevel;
   var openPath = (options.open === undefined || options.open === true) ?
     "" : ((options.open === null || options.open === false) ? null : options.open);
@@ -151,7 +152,11 @@ LiveServer.start = function (options) {
       if (!ws) return;
       var relativePath = path.relative(root, filePathOrErr);
 
-      if(extensions.length > 0 && extensions.indexOf(path.extname(relativePath).replace(/\./g, '')) < 0) {
+      if(exclExtensions.length > 0 && exclExtensions.indexOf(path.extname(relativePath).replace(/\./g, '')) > -1) {
+        return false
+      }
+
+      if(inclExtensions.length > 0 && inclExtensions.indexOf(path.extname(relativePath).replace(/\./g, '')) < 0) {
         return false
       }
 
