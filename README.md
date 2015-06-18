@@ -83,6 +83,8 @@ The ignore filter is executed before the include filter, so if you specify an id
 Version history
 ---------------
 
+* v0.1.5
+  - Support for `--only-exts` and `--ignore-exts` added. Thanks @danieldunderfelt!
 * v0.1.4
   - Proxying support is added. Thanks @kevrom!
 * v0.1.3
