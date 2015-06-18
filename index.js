@@ -92,6 +92,8 @@ LiveServer.start = function (options) {
   var host = options.host || '0.0.0.0';
   var port = options.port || 8080;
   var root = options.root || process.cwd();
+  var inclExtensions = options.inclExtensions || []
+  var exclExtensions = options.exclExtensions || []
   var logLevel = options.logLevel === undefined ? 2 : options.logLevel;
   var openPath = (options.open === undefined || options.open === true) ?
     "" : ((options.open === null || options.open === false) ? null : options.open);
@@ -149,6 +151,15 @@ LiveServer.start = function (options) {
     } else {
       if (!ws) return;
       var relativePath = path.relative(root, filePathOrErr);
+
+      if(exclExtensions.length > 0 && exclExtensions.indexOf(path.extname(relativePath).replace(/\./g, '')) > -1) {
+        return false
+      }
+
+      if(inclExtensions.length > 0 && inclExtensions.indexOf(path.extname(relativePath).replace(/\./g, '')) < 0) {
+        return false
+      }
+
       ws.send(JSON.stringify({type: 'change', path: relativePath}))
       if (logLevel >= 1) console.log(("Change detected: " + relativePath).cyan);
     }

@@ -5,7 +5,9 @@ var opts = {
 	proxyServer: null,
 	port: process.env.PORT,
 	open: true,
-	logLevel: 2
+	logLevel: 2,
+	inclExtensions: [],
+	exclExtensions: []
 };
 
 for (var i = process.argv.length-1; i >= 2; --i) {
@@ -32,6 +34,30 @@ for (var i = process.argv.length-1; i >= 2; --i) {
 		opts.open = path;
 		process.argv.splice(i, 1);
 	}
+	else if (arg.indexOf("--only-exts=") > -1) {
+		var extensions = []
+		var extArgs = arg.substring(12);
+		extArgs = extArgs.replace(/\./g, '');
+		if(extArgs) {
+			extensions = extArgs.split(/,\s?/);
+		}
+		if(extensions.length) {
+			opts.inclExtensions = extensions;
+			process.argv.splice(i, 1);
+		}
+	}
+	else if (arg.indexOf("--ignore-exts=") > -1) {
+		var extensions = []
+		var extArgs = arg.substring(14);
+		extArgs = extArgs.replace(/\./g, '');
+		if(extArgs) {
+			extensions = extArgs.split(/,\s?/);
+		}
+		if(extensions.length) {
+			opts.exclExtensions = extensions;
+			process.argv.splice(i, 1);
+		}
+	}
 	else if (arg == "--no-browser") {
 		opts.open = false;
 		process.argv.splice(i, 1);
@@ -39,7 +65,7 @@ for (var i = process.argv.length-1; i >= 2; --i) {
 		opts.logLevel = 0;
 		process.argv.splice(i, 1);
 	} else if (arg == "--help" || arg == "-h") {
-		console.log('Usage: jspm-server [-h|--help] [-q|--quiet] [--port=PORT] [--open=PATH] [--proxy=PROXY_PATH] [--no-browser] [PATH]');
+		console.log('Usage: jspm-server [-h|--help] [-q|--quiet] [--port=PORT] [--open=PATH] [--only-exts=EXTENSIONS] [--ignore-exts=EXTENSIONS] [--proxy=PROXY_PATH] [--no-browser] [PATH]');
 		process.exit();
 	}
 }
