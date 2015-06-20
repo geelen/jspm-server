@@ -80,8 +80,7 @@ Usage example: Usage example: `jspm-server --ignore-exts=".scss, .less"`
 
 The ignore filter is executed before the include filter, so if you specify an identical extension in both filters, it will be excluded.
 
-Version history
----------------
+## Version history
 
 * v0.1.5
   - Support for `--only-exts` and `--ignore-exts` added. Thanks @danieldunderfelt!
@@ -99,9 +98,24 @@ Version history
 * v0.0.1
 	- Forked from v0.7.1 of [live-server](https://github.com/tapio/live-server)
 
+## Development
 
-License
--------
+Friends, come and hack and make things better!
+
+- Check out this project
+- `npm install` to fetch the dependencies
+- `npm run build` to rebuild the injected file
+- `./jspm-server.js` to run your local dev copy
+
+Because the injected file needs to be rebuilt and the server restarted for every change, a useful command is:
+
+```sh
+npm run build && ./jspm-server.js ~/path/to/project --no-browser
+```
+
+Note: You'll need to hard-refresh (⌘⇧R) your browser for the injected file to be definitely picked up.
+
+## License
 
 Uses MIT licensed code from [live-server](https://github.com/tapio/live-server), [Connect](https://github.com/senchalabs/connect/) and  [Roots](https://github.com/jenius/roots).
 

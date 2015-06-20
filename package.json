@@ -32,6 +32,9 @@
   "engines": {
     "node": ">=0.8.0"
   },
+  "scripts": {
+    "build": "browserify injected.src.js -t babelify --outfile injected.js"
+  },
   "preferGlobal": true,
   "license": "MIT",
   "devDependencies": {
