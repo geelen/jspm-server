@@ -11,7 +11,7 @@ var fs = require('fs'),
   es = require("event-stream"),
   watchr = require('watchr'),
   chokidar = require('chokidar'),
-  foxy = require('foxy'),
+  httpProxy = require('http-proxy'),
   ws;
 
 var INJECTED_CODE = "<script>" + fs.readFileSync(__dirname + "/injected.js", "utf8") + "</script>";
@@ -113,23 +113,46 @@ LiveServer.start = function (options) {
       app.use(connect.logger('dev'));
     server = http.createServer(app).listen(port, host);
   } else {
-    var foundBody = false;
-    var proxyOpts = {
-      rules: [
-        {
-          match: /<\/body>/i,
-          fn: function(match) {
-            if (!foundBody) {
-              foundBody = true;
-              return INJECTED_CODE + "</body>";
-            } else {
-              return match;
-            }
+    // set up the proxy server
+    var proxy = httpProxy.createProxyServer({
+      target: options.proxyServer
+    });
+
+    // set up a connect server to install middleware, which will be used by the proxy server
+    server = connect()
+      .use(function(req, res, next) {
+        var _write = res.write;
+        var _writeHead = res.writeHead;
+
+        var isHTML;
+
+        // set up the headers so that injection works correctly
+        res.writeHead = function(code, headers) {
+          headers = headers || {};
+          isHTML = res.getHeader('content-type') && res.getHeader('content-type').match('text/html');
+
+          if (isHTML) {
+            res.setHeader('content-length', parseInt(res.getHeader('content-length')) + INJECTED_CODE.length);
           }
+
+          _writeHead.apply(this, arguments);
         }
-      ]
-    };
-	server = foxy(options.proxyServer, proxyOpts).listen(options.port || 8080);
+
+        // perform the actual injection if the chunk is html
+        res.write = function(chunk) {
+          if (isHTML) {
+            chunk = chunk.toString().replace(new RegExp('</body>', 'i'), INJECTED_CODE + '</body>');
+          }
+          _write.call(res, chunk);
+        }
+
+        next();
+      })
+      .use(function(req, res) {
+        proxy.web(req, res);
+      })
+      .listen(options.port || 8080)
+      .on('error', console.log.bind(console));
   }
 
   // WebSocket
