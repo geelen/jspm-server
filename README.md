@@ -82,6 +82,8 @@ The ignore filter is executed before the include filter, so if you specify an id
 
 ## Version history
 
+* v0.1.6
+  - Supports multiple browsers to be connected and live-reloaded simultaneously.
 * v0.1.5
   - Support for `--only-exts` and `--ignore-exts` added. Thanks @danieldunderfelt!
 * v0.1.4
