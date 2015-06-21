@@ -12,6 +12,7 @@ var fs = require('fs'),
   watchr = require('watchr'),
   chokidar = require('chokidar'),
   httpProxy = require('http-proxy'),
+  zlib = require('zlib'),
   ws;
 
 var INJECTED_CODE = "<script>" + fs.readFileSync(__dirname + "/injected.js", "utf8") + "</script>";
@@ -119,20 +120,25 @@ LiveServer.start = function (options) {
     });
 
     // set up a connect server to install middleware, which will be used by the proxy server
-    server = connect()
+	server = connect()
       .use(function(req, res, next) {
         var _write = res.write;
         var _writeHead = res.writeHead;
 
         var isHTML;
 
+        // disable any compression
+        req.headers['accept-encoding'] = 'identity';
+
         // set up the headers so that injection works correctly
         res.writeHead = function(code, headers) {
-          headers = headers || {};
-          isHTML = res.getHeader('content-type') && res.getHeader('content-type').match('text/html');
+          var cEnc = res.getHeader('content-encoding');
+          var cType = res.getHeader('content-type');
+          var cLen = res.getHeader('content-length');
+          isHTML = cType && cType.match('text/html');
 
           if (isHTML) {
-            res.setHeader('content-length', parseInt(res.getHeader('content-length')) + INJECTED_CODE.length);
+			res.setHeader('content-length', parseInt(cLen) + INJECTED_CODE.length);
           }
 
           _writeHead.apply(this, arguments);
@@ -140,10 +146,11 @@ LiveServer.start = function (options) {
 
         // perform the actual injection if the chunk is html
         res.write = function(chunk) {
-          if (isHTML) {
-            chunk = chunk.toString().replace(new RegExp('</body>', 'i'), INJECTED_CODE + '</body>');
+          function inject(body) {
+            return body.toString().replace(new RegExp('</body>', 'i'), INJECTED_CODE + '</body>');
           }
-          _write.call(res, chunk);
+
+          _write.call(res, isHTML ? inject(chunk) : chunk);
         }
 
         next();
