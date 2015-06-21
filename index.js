@@ -13,7 +13,8 @@ var fs = require('fs'),
   chokidar = require('chokidar'),
   httpProxy = require('http-proxy'),
   zlib = require('zlib'),
-  ws;
+  ws,
+  clients = [];
 
 var INJECTED_CODE = "<script>" + fs.readFileSync(__dirname + "/injected.js", "utf8") + "</script>";
 
@@ -164,10 +165,11 @@ LiveServer.start = function (options) {
 
   // WebSocket
   server.addListener('upgrade', function (request, socket, head) {
-    ws = new WebSocket(request, socket, head);
+    var ws = new WebSocket(request, socket, head);
     ws.onopen = function () {
       ws.send(JSON.stringify({type: 'connected'}));
     };
+    clients.push(ws)
   });
 
   // Setup file watcher
@@ -179,8 +181,8 @@ LiveServer.start = function (options) {
     if (event == 'error') {
       console.log("ERROR:".red, filePathOrErr);
     } else {
-      if (!ws) return;
       var relativePath = path.relative(root, filePathOrErr);
+      if (logLevel >= 1) console.log(("Change detected: " + relativePath).cyan);
 
       if(exclExtensions.length > 0 && exclExtensions.indexOf(path.extname(relativePath).replace(/\./g, '')) > -1) {
         return false
@@ -190,8 +192,9 @@ LiveServer.start = function (options) {
         return false
       }
 
-      ws.send(JSON.stringify({type: 'change', path: relativePath}))
-      if (logLevel >= 1) console.log(("Change detected: " + relativePath).cyan);
+      clients.forEach( function ( ws ) {
+        ws.send(JSON.stringify({type: 'change', path: relativePath}))
+      })
     }
   });
 
