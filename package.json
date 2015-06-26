@@ -17,7 +17,7 @@
     "connect": "2.x.x",
     "event-stream": "latest",
     "faye-websocket": "0.9.x",
-    "foxy": "^11.0.2",
+    "http-proxy": "^1.11.1",
     "open": "latest",
     "send": "latest",
     "watchr": "2.3.x"
