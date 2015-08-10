@@ -168,8 +168,11 @@ LiveServer.start = function (options) {
     .on('error', console.log.bind(console));
   }
 
+  var baseUrl = '';
+
   // WebSocket
   server.addListener('upgrade', function (request, socket, head) {
+    baseUrl =  request.headers.origin;
     var ws = new WebSocket(request, socket, head);
     ws.onopen = function () {
       ws.send(JSON.stringify({type: 'connected'}));
@@ -198,7 +201,7 @@ LiveServer.start = function (options) {
       }
 
       clients.forEach( function ( ws ) {
-        ws.send(JSON.stringify({type: 'change', path: relativePath}))
+        ws.send(JSON.stringify({type: 'change', path: baseUrl + '/' + relativePath}))
       })
     }
   });

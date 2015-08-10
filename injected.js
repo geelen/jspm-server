@@ -7,31 +7,32 @@ require('./lib');
 },{"./lib":3}],2:[function(require,module,exports){
 'use strict';
 
-var _interopRequireWildcard = function (obj) { return obj && obj.__esModule ? obj : { 'default': obj }; };
-
-var _slicedToArray = function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } };
-
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } };
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 Object.defineProperty(exports, '__esModule', {
   value: true
 });
 
-var _ModuleDiffer = require('./module-differ');
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
 
-var _ModuleDiffer2 = _interopRequireWildcard(_ModuleDiffer);
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+var _moduleDiffer = require('./module-differ');
+
+var _moduleDiffer2 = _interopRequireDefault(_moduleDiffer);
 
 var _url = require('url');
 
-var _url2 = _interopRequireWildcard(_url);
+var _url2 = _interopRequireDefault(_url);
 
 var ChangeHandler = (function () {
   function ChangeHandler(System) {
     _classCallCheck(this, ChangeHandler);
 
     this.System = System;
+    this.hotReload = System.hotReload || false;
     this.moduleMap = new Map();
     this.depMap = new Map();
     this.updateModuleMap();
@@ -88,9 +89,7 @@ var ChangeHandler = (function () {
       var _this3 = this;
 
       var baseUrlPath = _url2['default'].parse(System.baseURL).pathname,
-          path = ('/' + _path).replace(new RegExp('^' + baseUrlPath), '') // match up file paths to System module names
-      .replace(/^\//, '') // a leading slash may remain in some cases and should be removed
-      .replace(/\.js$/, ''); // .js extensions are implicit in 0.16.x
+          path = _path;
 
       // Make sure our knowledge of the modules is up to date
       this.updateModuleMap();
@@ -99,16 +98,20 @@ var ChangeHandler = (function () {
       // If the change occurs to a file we don't have a record of
       // e.g. a HTML file, reload the browser window
       if (!this.moduleMap.has(path)) {
-        this.reload(path, 'Change occurred to a file outside SystemJS loading');
+        this.reload(path, "Change occurred to a file outside SystemJS loading");
         return;
       }
 
       // Import our existing copy of the file that just changed, to inspect it
       var moduleInfo = this.moduleMap.get(path);
       this.System['import'](moduleInfo.moduleName).then(function (oldModule) {
-        // If __hotReload is false or undefined, bail out immediately
-        if (!oldModule.__hotReload) {
-          return Promise.reject('' + path + ' is not hot reloadable!');
+        var hotReload = _this3.hotReload;
+        if (hotReload === false && oldModule.__hotReload) {
+          hotReload = oldModule.__hotReload;
+        }
+        // If hotReload is false, bail out immediately
+        if (!hotReload) {
+          return Promise.reject(path + ' is not hot reloadable!');
         }
 
         // Grab the loader if there is one for this file
@@ -123,15 +126,15 @@ var ChangeHandler = (function () {
           // Now the new module is loaded, we need to handle the old one and
           // potentially propagate the event up the dependency chain.
           var propagateIfNeeded = undefined;
-          if (oldModule.__hotReload === true) {
+          if (hotReload === true) {
             propagateIfNeeded = true;
-          } else if (typeof oldModule.__hotReload === 'function') {
-            propagateIfNeeded = oldModule.__hotReload.call(oldModule, loader, newModule);
+          } else if (typeof hotReload === "function") {
+            propagateIfNeeded = hotReload.call(oldModule, loader, newModule);
           }
 
           // Propagate if the exports from the old and new module differ, or if we've
-          // returned false from our __hotReload handler.
-          if (propagateIfNeeded && !_ModuleDiffer2['default'].shallowEqual(oldModule, newModule)) {
+          // returned false from our hotReload handler.
+          if (propagateIfNeeded && !_moduleDiffer2['default'].shallowEqual(oldModule, newModule)) {
             var deps = _this3.depMap.get(path);
             if (deps) deps.forEach(function (dep) {
               return _this3.fileChanged(dep);
@@ -163,16 +166,15 @@ var ChangeHandler = (function () {
 
 exports['default'] = ChangeHandler;
 module.exports = exports['default'];
-// paths don't come with a preceding slash but URLs do
 
 },{"./module-differ":5,"url":27}],3:[function(require,module,exports){
 'use strict';
 
-var _interopRequireWildcard = function (obj) { return obj && obj.__esModule ? obj : { 'default': obj }; };
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 var _messageHandler = require('./message-handler');
 
-var _messageHandler2 = _interopRequireWildcard(_messageHandler);
+var _messageHandler2 = _interopRequireDefault(_messageHandler);
 
 var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
 var address = protocol + window.location.host + window.location.pathname + '/ws';
@@ -182,34 +184,34 @@ socket.onmessage = function (msg) {
   try {
     data = JSON.parse(msg.data);
   } catch (e) {
-    console.error('Non-JSON response received: ' + JSON.stringify(msg));
+    console.error("Non-JSON response received: " + JSON.stringify(msg));
     throw e;
   }
-  _messageHandler2['default'](data);
+  (0, _messageHandler2['default'])(data);
 };
 
 },{"./message-handler":4}],4:[function(require,module,exports){
 'use strict';
 
-var _interopRequireWildcard = function (obj) { return obj && obj.__esModule ? obj : { 'default': obj }; };
-
 Object.defineProperty(exports, '__esModule', {
   value: true
 });
 
-var _ChangeHandler = require('./change-handler');
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-var _ChangeHandler2 = _interopRequireWildcard(_ChangeHandler);
+var _changeHandler = require('./change-handler');
+
+var _changeHandler2 = _interopRequireDefault(_changeHandler);
 
 var changeHandler = undefined;
 
 exports['default'] = function (message) {
-  if (message.type == 'connected') {
+  if (message.type == "connected") {
     console.log('JSPM watching enabled!');
-  } else if (message.type == 'change') {
+  } else if (message.type == "change") {
     // Make sure SystemJS is fully loaded
     if (!changeHandler && window.System && window.System._loader && window.System._loader.modules) {
-      changeHandler = new _ChangeHandler2['default'](window.System);
+      changeHandler = new _changeHandler2['default'](window.System);
     }
     if (changeHandler) changeHandler.fileChanged(message.path);
   } else {
@@ -222,25 +224,25 @@ module.exports = exports['default'];
 },{"./change-handler":2}],5:[function(require,module,exports){
 "use strict";
 
-var _interopRequireWildcard = function (obj) { return obj && obj.__esModule ? obj : { "default": obj }; };
-
-var _slicedToArray = function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } };
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _F = require("fkit");
+var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; })();
 
-var _F2 = _interopRequireWildcard(_F);
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+var _fkit = require('fkit');
+
+var _fkit2 = _interopRequireDefault(_fkit);
 
 var notChecked = function notChecked(pair) {
   return !(pair[0] == "default" && typeof pair[1] === "object" || /^__/.exec(pair[0]));
 },
     getPairs = function getPairs(module) {
-  var pairs = _F2["default"].filter(notChecked, _F2["default"].pairs(module));
+  var pairs = _fkit2["default"].filter(notChecked, _fkit2["default"].pairs(module));
   if (typeof module["default"] === "object") {
-    return pairs.concat(_F2["default"].pairs(module["default"]));
+    return pairs.concat(_fkit2["default"].pairs(module["default"]));
   } else {
     return pairs;
   }
@@ -258,7 +260,7 @@ exports["default"] = {
   shallowEqual: function shallowEqual(moduleA, moduleB) {
     var a = getPairs(moduleA),
         b = getPairs(moduleB);
-    return a.length == b.length && _F2["default"].all(pairsEqual, _F2["default"].zip(a, b));
+    return a.length == b.length && _fkit2["default"].all(pairsEqual, _fkit2["default"].zip(a, b));
   }
 };
 module.exports = exports["default"];
