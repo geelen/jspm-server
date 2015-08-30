@@ -89,9 +89,6 @@ var ChangeHandler = (function () {
 
       var path = System.normalizeSync(_path);
 
-      if (path.indexOf('.jsx') >= 0) {
-        path = path.replace('.jsx.js', '.jsx') + '!' + System.normalizeSync(System.map['jsx']);
-      }
       // Make sure our knowledge of the modules is up to date
       this.updateModuleMap();
       this.updateDepMap();
