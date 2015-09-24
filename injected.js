@@ -207,9 +207,8 @@ exports['default'] = function (message) {
     console.log('JSPM watching enabled!');
   } else if (message.type == 'change') {
     // Make sure SystemJS is fully loaded
-    if (!changeHandler && window._System && window._System._loader && window._System._loader.loads) {
-      console.log('ok smarty');
-      changeHandler = new _ChangeHandler2['default'](window._System);
+    if (!changeHandler && window.System && window.System._loader && window.System._loader.loads) {
+      changeHandler = new _ChangeHandler2['default'](window.System);
     }
     if (changeHandler) changeHandler.fileChanged(message.path);
   } else {
