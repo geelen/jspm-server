@@ -87,72 +87,67 @@ var ChangeHandler = (function () {
     value: function fileChanged(_path) {
       var _this3 = this;
 
-      var path = System.normalize(_path);
-      console.log(path);
+      System.normalize(_path).then(function (path) {
+        console.log(path);
 
-      // Make sure our knowledge of the modules is up to date
-      this.updateModuleMap();
-      this.updateDepMap();
+        // Make sure our knowledge of the modules is up to date
+        _this3.updateModuleMap();
+        _this3.updateDepMap();
+        window.moduleMap = _this3.moduleMap;
+        window.depMap = _this3.depMap;
 
-      // If the change occurs to a file we don't have a record of
-      // e.g. a HTML file, reload the browser window
-      if (!this.moduleMap.has(path)) {
-        this.reload(path, 'Change occurred to a file outside SystemJS loading');
-        return;
-      }
-
-      // Import our existing copy of the file that just changed, to inspect it
-      var moduleInfo = this.moduleMap.get(path);
-      this.System['import'](moduleInfo.moduleName).then(function (oldModule) {
-        // If __hotReload is false or undefined, bail out immediately
-        if (!oldModule.__hotReload) {
-          return Promise.reject('' + path + ' is not hot reloadable!');
+        // If the change occurs to a file we don't have a record of
+        // e.g. a HTML file, reload the browser window
+        if (!_this3.moduleMap.has(path)) {
+          _this3.reload(path, 'Change occurred to a file outside SystemJS loading');
+          return;
         }
 
-        // Grab the loader if there is one for this file
-        var loader = moduleInfo.loader && (moduleInfo.loader['default'] || moduleInfo.loader);
-
-        // Remove the module from the registry and call import again.
-        // The changed file will be fetched and reinterpreted
-        _this3.System['delete'](moduleInfo.moduleName);
-        _this3.System['import'](moduleInfo.moduleName).then(function (newModule) {
-          console.log('Reloaded ' + path);
-
-          // Now the new module is loaded, we need to handle the old one and
-          // potentially propagate the event up the dependency chain.
-          var propagateIfNeeded = undefined;
-          if (oldModule.__hotReload === true) {
-            propagateIfNeeded = true;
-          } else if (typeof oldModule.__hotReload === 'function') {
-            propagateIfNeeded = oldModule.__hotReload.call(oldModule, loader, newModule);
+        // Import our existing copy of the file that just changed, to inspect it
+        var moduleInfo = _this3.moduleMap.get(path);
+        return _this3.System['import'](moduleInfo.moduleName).then(function (oldModule) {
+          // If __hotReload is false or undefined, bail out immediately
+          console.log(oldModule);
+          if (!oldModule.__hotReload) {
+            return Promise.reject('' + path + ' is not hot reloadable!');
           }
 
-          // Propagate if the exports from the old and new module differ, or if we've
-          // returned false from our __hotReload handler.
-          if (propagateIfNeeded && !_ModuleDiffer2['default'].shallowEqual(oldModule, newModule)) {
-            var deps = _this3.depMap.get(path);
-            if (deps) deps.forEach(function (dep) {
-              return _this3.fileChanged(dep);
-            });
-          }
+          // Grab the loader if there is one for this file
+          var loader = moduleInfo.loader && (moduleInfo.loader['default'] || moduleInfo.loader);
+
+          // Remove the module from the registry and call import again.
+          // The changed file will be fetched and reinterpreted
+          _this3.System['delete'](moduleInfo.moduleName);
+          _this3.System['import'](moduleInfo.moduleName).then(function (newModule) {
+            console.log('Reloaded ' + path);
+
+            // Now the new module is loaded, we need to handle the old one and
+            // potentially propagate the event up the dependency chain.
+            var propagateIfNeeded = undefined;
+            if (oldModule.__hotReload === true) {
+              propagateIfNeeded = true;
+            } else if (typeof oldModule.__hotReload === 'function') {
+              propagateIfNeeded = oldModule.__hotReload.call(oldModule, loader, newModule);
+            }
+
+            // Propagate if the exports from the old and new module differ, or if we've
+            // returned false from our __hotReload handler.
+            if (propagateIfNeeded && !_ModuleDiffer2['default'].shallowEqual(oldModule, newModule)) {
+              var deps = _this3.depMap.get(path);
+              if (deps) deps.forEach(function (dep) {
+                return _this3.fileChanged(dep);
+              });
+            }
+          });
+        })['catch'](function (reason) {
+          return _this3.reload(path, reason);
         });
-      })['catch'](function (reason) {
-        return _this3.reload(path, reason);
       });
     }
   }, {
     key: 'reload',
     value: function reload(path, reason) {
       console.info('Change detected in ' + path + ' that cannot be handled gracefully: ' + reason);
-      setTimeout(function () {
-        return console.info('Reloading in 2...');
-      }, 1000);
-      setTimeout(function () {
-        return console.info('1...');
-      }, 2000);
-      setTimeout(function () {
-        return window.location.reload();
-      }, 3000);
     }
   }]);
 
@@ -161,6 +156,9 @@ var ChangeHandler = (function () {
 
 exports['default'] = ChangeHandler;
 module.exports = exports['default'];
+//setTimeout( () => console.info( `Reloading in 2...` ), 1000 )
+//setTimeout( () => console.info( `1...` ), 2000 )
+//setTimeout( () => window.location.reload(), 3000 )
 
 },{"./module-differ":5,"url":27}],3:[function(require,module,exports){
 'use strict';
@@ -207,8 +205,9 @@ exports['default'] = function (message) {
     console.log('JSPM watching enabled!');
   } else if (message.type == 'change') {
     // Make sure SystemJS is fully loaded
-    if (!changeHandler && window.System && window.System._loader && window.System._loader.loads) {
-      changeHandler = new _ChangeHandler2['default'](window.System);
+    if (!changeHandler && window._System && window._System._loader && window._System._loader.loads) {
+      console.log('ok smarty');
+      changeHandler = new _ChangeHandler2['default'](window._System);
     }
     if (changeHandler) changeHandler.fileChanged(message.path);
   } else {
