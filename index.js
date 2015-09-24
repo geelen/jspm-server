@@ -193,6 +193,7 @@ LiveServer.start = function (options) {
       }
 
       clients.forEach( function ( ws ) {
+        console.log(JSON.stringify({type: 'change', path: relativePath}))
         ws.send(JSON.stringify({type: 'change', path: relativePath}))
       })
     }
