@@ -28,6 +28,28 @@ function escape(html) {
     .replace(/"/g, '&quot;');
 }
 
+function prefixSlash(path) {
+ if (!path || !path.length)
+   return "/";
+ else if (path[0] !== '/')
+   return "/" + path;
+ return path;
+}
+
+function baseHandler(staticHandler, base) {
+ if (!base) return staticHandler;
+ base = prefixSlash(base);
+ return function(req, res, next) {
+   if (req.url.lastIndexOf(base, 0) === 0) {
+     req.url = prefixSlash(req.url.substring(base.length));
+     staticHandler(req, res, next);
+     return;
+   }
+   next();
+ };
+}
+
+
 // Based on connect.static(), but streamlined and with added code injecter
 function staticServer(root, html5mode) {
   return function (req, res, next) {
@@ -94,6 +116,7 @@ LiveServer.start = function (options) {
   var host = options.host || '0.0.0.0';
   var port = options.port || 8080;
   var root = options.root || process.cwd();
+  var base = options.base || null;
   var inclExtensions = options.inclExtensions || []
   var exclExtensions = options.exclExtensions || []
   var logLevel = options.logLevel === undefined ? 2 : options.logLevel;
@@ -104,12 +127,12 @@ LiveServer.start = function (options) {
   if (html5mode) {
     console.log(("200.html detected, serving it for all URLs that have no '.' (html5mode)").yellow)
   }
-
   var server;
+  var staticServerHandler = staticServer(root, html5mode);
   // Setup a web server
   if (!options.proxyServer) {
     var app = connect()
-      .use(staticServer(root, html5mode)) // Custom static server
+      .use(baseHandler(staticServerHandler, base)) // Custom static server
       .use(connect.directory(root, {icons: true}));
     if (logLevel >= 2)
       app.use(connect.logger('dev'));
