@@ -122,6 +122,10 @@ LiveServer.start = function (options) {
   var logLevel = options.logLevel === undefined ? 2 : options.logLevel;
   var openPath = (options.open === undefined || options.open === true) ?
     "" : ((options.open === null || options.open === false) ? null : options.open);
+
+  if (options.base) {
+    openPath += options.base;
+  }
   if (options.noBrowser) openPath = null; // Backwards compatibility with 0.7.0
   var html5mode = fs.existsSync(root + "/200.html")
   if (html5mode) {
