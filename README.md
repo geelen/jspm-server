@@ -3,6 +3,8 @@
 
 # JSPM Server
 
+[![Join the chat at https://gitter.im/geelen/jspm-server](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/geelen/jspm-server?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 This is a development server for JSPM static sites. It's based on @tapio's excellent [live-server](https://github.com/tapio/live-server), which I used for a long time very happily.
 
 
