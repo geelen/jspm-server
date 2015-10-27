@@ -87,7 +87,7 @@ var ChangeHandler = (function () {
     value: function fileChanged(_path) {
       var _this3 = this;
 
-      System.normalize(_path).then(function (path) {
+      this.System.normalize(_path).then(function (path) {
         console.log(path);
 
         // Make sure our knowledge of the modules is up to date
@@ -204,10 +204,11 @@ exports['default'] = function (message) {
   if (message.type == 'connected') {
     console.log('JSPM watching enabled!');
   } else if (message.type == 'change') {
+    if (window._System) window.System = window._System;
     // Make sure SystemJS is fully loaded
-    if (!changeHandler && window._System && window._System._loader && window._System._loader.loads) {
+    if (!changeHandler && window.System && window.System._loader && window.System._loader.loads) {
       console.log('ok smarty');
-      changeHandler = new _ChangeHandler2['default'](window._System);
+      changeHandler = new _ChangeHandler2['default'](window.System);
     }
     if (changeHandler) changeHandler.fileChanged(message.path);
   } else {
