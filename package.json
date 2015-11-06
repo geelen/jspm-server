@@ -20,6 +20,7 @@
     "http-proxy": "^1.11.1",
     "open": "latest",
     "send": "latest",
+    "spdy": "^2.0.0-beta4",
     "watchr": "2.3.x"
   },
   "bin": {

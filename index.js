@@ -5,7 +5,7 @@ var fs = require('fs'),
   WebSocket = require('faye-websocket'),
   path = require('path'),
   url = require('url'),
-  http = require('http'),
+  http = require('spdy'),
   send = require('send'),
   open = require('open'),
   es = require("event-stream"),
@@ -113,7 +113,12 @@ LiveServer.start = function (options) {
       .use(connect.directory(root, {icons: true}));
     if (logLevel >= 2)
       app.use(connect.logger('dev'));
-    server = http.createServer(app).listen(port, host);
+    var serverOptions = {
+      key: fs.readFileSync(path.join(__dirname, 'certificates', 'localhost.key')),
+      cert: fs.readFileSync(path.join(__dirname, 'certificates', 'localhost.crt')),
+    };
+    server = http.createServer(serverOptions, app);
+    server.listen(port, host);
   } else {
     // set up the proxy server
     var proxy = httpProxy.createProxyServer({
