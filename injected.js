@@ -49,7 +49,7 @@ var ChangeHandler = (function () {
         this.moduleMap.clear();
         modules.forEach(function (moduleName) {
           var meta = _this.System.loads[moduleName].metadata,
-              path = meta.pluginArgument || meta.loaderArgument || moduleName;
+              path = _this.System.loads[moduleName].address || meta.pluginArgument || meta.loaderArgument || moduleName;
           _this.moduleMap.set(path, { moduleName: moduleName, loader: meta.plugin || meta.loaderModule });
         });
       }
@@ -98,8 +98,12 @@ var ChangeHandler = (function () {
         // If the change occurs to a file we don't have a record of
         // e.g. a HTML file, reload the browser window
         if (!_this3.moduleMap.has(path)) {
-          _this3.reload(path, 'Change occurred to a file outside SystemJS loading');
-          return;
+          if (_this3.moduleMap.has(path.replace(/.js$/, ''))) {
+            path = path.replace(/.js$/, '');
+          } else {
+            _this3.reload(path, 'Change occurred to a file outside SystemJS loading');
+            return;
+          }
         }
 
         // Import our existing copy of the file that just changed, to inspect it
@@ -146,9 +150,6 @@ var ChangeHandler = (function () {
     key: 'reload',
     value: function reload(path, reason) {
       this.responder({ type: 'bad', message: '💥  Change to ' + path + ' cannot be handled gracefully:\n👉  ' + reason });
-      setTimeout(function () {
-        return window.location.reload();
-      }, 100);
     }
   }]);
 
@@ -157,6 +158,7 @@ var ChangeHandler = (function () {
 
 exports['default'] = ChangeHandler;
 module.exports = exports['default'];
+//setTimeout( () => window.location.reload(), 100 )
 
 },{"./module-differ":5,"url":27}],3:[function(require,module,exports){
 'use strict';
