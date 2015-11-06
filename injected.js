@@ -28,10 +28,11 @@ var _url = require('url');
 var _url2 = _interopRequireWildcard(_url);
 
 var ChangeHandler = (function () {
-  function ChangeHandler(System) {
+  function ChangeHandler(System, responder) {
     _classCallCheck(this, ChangeHandler);
 
     this.System = System;
+    this.responder = responder;
     this.moduleMap = new Map();
     this.depMap = new Map();
     this.updateModuleMap();
@@ -88,8 +89,6 @@ var ChangeHandler = (function () {
       var _this3 = this;
 
       this.System.normalize(_path).then(function (path) {
-        console.log(path);
-
         // Make sure our knowledge of the modules is up to date
         _this3.updateModuleMap();
         _this3.updateDepMap();
@@ -107,7 +106,6 @@ var ChangeHandler = (function () {
         var moduleInfo = _this3.moduleMap.get(path);
         return _this3.System['import'](moduleInfo.moduleName).then(function (oldModule) {
           // If __hotReload is false or undefined, bail out immediately
-          console.log(oldModule);
           if (!oldModule.__hotReload) {
             return Promise.reject('' + path + ' is not hot reloadable!');
           }
@@ -119,7 +117,7 @@ var ChangeHandler = (function () {
           // The changed file will be fetched and reinterpreted
           _this3.System['delete'](moduleInfo.moduleName);
           _this3.System['import'](moduleInfo.moduleName).then(function (newModule) {
-            console.log('Reloaded ' + path);
+            _this3.responder({ type: 'good', message: '🔁  Reloaded ' + path });
 
             // Now the new module is loaded, we need to handle the old one and
             // potentially propagate the event up the dependency chain.
@@ -147,7 +145,10 @@ var ChangeHandler = (function () {
   }, {
     key: 'reload',
     value: function reload(path, reason) {
-      console.info('Change detected in ' + path + ' that cannot be handled gracefully: ' + reason);
+      this.responder({ type: 'bad', message: '💥  Change to ' + path + ' cannot be handled gracefully:\n👉  ' + reason });
+      setTimeout(function () {
+        return window.location.reload();
+      }, 100);
     }
   }]);
 
@@ -156,9 +157,6 @@ var ChangeHandler = (function () {
 
 exports['default'] = ChangeHandler;
 module.exports = exports['default'];
-//setTimeout( () => console.info( `Reloading in 2...` ), 1000 )
-//setTimeout( () => console.info( `1...` ), 2000 )
-//setTimeout( () => window.location.reload(), 3000 )
 
 },{"./module-differ":5,"url":27}],3:[function(require,module,exports){
 'use strict';
@@ -173,50 +171,54 @@ var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
 var address = protocol + window.location.host + window.location.pathname + '/ws';
 var socket = new WebSocket(address);
 socket.onmessage = function (msg) {
-  console.log(msg);
   var data = undefined;
   try {
     data = JSON.parse(msg.data);
-    console.log(data);
   } catch (e) {
     console.error('Non-JSON response received: ' + JSON.stringify(msg));
     throw e;
   }
-  _messageHandler2['default'](data);
+  _messageHandler2['default'](data, function (response) {
+    console[response.type === 'good' ? 'log' : 'warn'](response.message);
+    socket.send(JSON.stringify(response));
+  });
 };
 
 },{"./message-handler":4}],4:[function(require,module,exports){
-'use strict';
+"use strict";
 
-var _interopRequireWildcard = function (obj) { return obj && obj.__esModule ? obj : { 'default': obj }; };
+var _interopRequireWildcard = function (obj) { return obj && obj.__esModule ? obj : { "default": obj }; };
 
-Object.defineProperty(exports, '__esModule', {
+Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _ChangeHandler = require('./change-handler');
+var _ChangeHandler = require("./change-handler");
 
 var _ChangeHandler2 = _interopRequireWildcard(_ChangeHandler);
 
 var changeHandler = undefined;
 
-exports['default'] = function (message) {
-  if (message.type == 'connected') {
-    console.log('JSPM watching enabled!');
-  } else if (message.type == 'change') {
-    if (window._System) window.System = window._System;
+exports["default"] = function (message, responder) {
+  if (message.type == "connected") {
+    responder({ type: "good", message: "🤘  Client connected. JSPM watching enabled" });
+  } else if (message.type == "change") {
     // Make sure SystemJS is fully loaded
     if (!changeHandler && window.System && window.System._loader && window.System._loader.loads) {
-      console.log('ok smarty');
-      changeHandler = new _ChangeHandler2['default'](window.System);
+      responder({ type: "good", message: "✅  SystemJS loaded. Initialising ChangeHandler" });
+      changeHandler = new _ChangeHandler2["default"](window.System, responder);
     }
-    if (changeHandler) changeHandler.fileChanged(message.path);
+    if (changeHandler) {
+      changeHandler.fileChanged(message.path);
+    } else {
+      responder({ type: "bad", message: "💥  SystemJS not yet loaded. Ignoring change." });
+    }
   } else {
-    console.error('Unknown message type! ' + JSON.stringify(message));
+    console.error("Unknown message type! " + JSON.stringify(message));
   }
 };
 
-module.exports = exports['default'];
+module.exports = exports["default"];
 
 },{"./change-handler":2}],5:[function(require,module,exports){
 "use strict";

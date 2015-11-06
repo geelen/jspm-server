@@ -169,6 +169,14 @@ LiveServer.start = function (options) {
     ws.onopen = function () {
       ws.send(JSON.stringify({type: 'connected'}));
     };
+    ws.onmessage = function (message) {
+      try {
+        var response = JSON.parse(message.data);
+        console.log(response.message[response.type === 'good' ? 'green' : 'red']);
+      } catch(e) {
+        console.log(message.data.red);
+      }
+    }
     clients.push(ws)
   });
 
@@ -193,7 +201,6 @@ LiveServer.start = function (options) {
       }
 
       clients.forEach( function ( ws ) {
-        console.log(JSON.stringify({type: 'change', path: relativePath}))
         ws.send(JSON.stringify({type: 'change', path: relativePath}))
       })
     }
@@ -203,9 +210,9 @@ LiveServer.start = function (options) {
   if (logLevel >= 1) {
     if (!options.proxyServer) {
       var serveURL = "http://127.0.0.1:" + port;
-      console.log(('Serving "' + root + '" at ' + serveURL).green);
+      console.log(('Serving "' + root + '" at ' + serveURL).cyan);
     } else {
-      console.log(('Starting a proxy server for ' + options.proxyServer + ' at ' + 'http://localhost:' + options.port).green);
+      console.log(('Starting a proxy server for ' + options.proxyServer + ' at ' + 'http://localhost:' + options.port).cyan);
     }
   }
 
