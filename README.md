@@ -24,6 +24,7 @@ Additional parameters:
 * `--quiet` - suppress logging
 * `--open=PATH` - launch browser to PATH instead of server root
 * `--port=8081` - open with port
+* `--base=BASEPATH` - require all requests to be prefixed by given virtual path
 * `--proxy=http://localhost:8080` - proxy a running server
 * `--only-exts=""` - watch only files with the specified extensions
 * `--ignore-exts=""` - exclude files with the specified extensions

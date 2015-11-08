@@ -34,6 +34,10 @@ for (var i = process.argv.length-1; i >= 2; --i) {
 		opts.open = path;
 		process.argv.splice(i, 1);
 	}
+	else if (arg.indexOf("--base=") > -1) {
+		opts.base = arg.substring(7);
+		process.argv.splice(i, 1);
+	}
 	else if (arg.indexOf("--only-exts=") > -1) {
 		var extensions = []
 		var extArgs = arg.substring(12);
