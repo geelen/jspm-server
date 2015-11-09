@@ -49,7 +49,7 @@ var ChangeHandler = (function () {
         this.moduleMap.clear();
         modules.forEach(function (moduleName) {
           var meta = _this.System.loads[moduleName].metadata,
-              path = _this.System.loads[moduleName].address || meta.pluginArgument || meta.loaderArgument || moduleName;
+              path = /*this.System.loads[moduleName].address || */meta.pluginArgument || meta.loaderArgument || moduleName;
           _this.moduleMap.set(path, { moduleName: moduleName, loader: meta.plugin || meta.loaderModule });
         });
       }
@@ -89,7 +89,6 @@ var ChangeHandler = (function () {
       var _this3 = this;
 
       this.System.normalize(_path).then(function (path) {
-        // Make sure our knowledge of the modules is up to date
         _this3.updateModuleMap();
         _this3.updateDepMap();
         window.moduleMap = _this3.moduleMap;
@@ -97,6 +96,8 @@ var ChangeHandler = (function () {
 
         // If the change occurs to a file we don't have a record of
         // e.g. a HTML file, reload the browser window
+        console.log(_this3.moduleMap);
+        console.log(path);
         if (!_this3.moduleMap.has(path)) {
           if (_this3.moduleMap.has(path.replace(/.js$/, ''))) {
             path = path.replace(/.js$/, '');
@@ -205,6 +206,7 @@ exports["default"] = function (message, responder) {
   if (message.type == "connected") {
     responder({ type: "good", message: "🤘  Client connected. JSPM watching enabled" });
   } else if (message.type == "change") {
+    if (window._System) window.System = window._System;
     // Make sure SystemJS is fully loaded
     if (!changeHandler && window.System && window.System._loader && window.System._loader.loads) {
       responder({ type: "good", message: "✅  SystemJS loaded. Initialising ChangeHandler" });
