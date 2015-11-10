@@ -12,15 +12,15 @@
   ],
   "author": "Glen Maddern",
   "dependencies": {
-    "chokidar": "~1.0.1",
+    "chokidar": "~1.2.0",
     "colors": "latest",
     "connect": "2.x.x",
     "event-stream": "latest",
-    "faye-websocket": "0.9.x",
-    "http-proxy": "^1.11.1",
+    "faye-websocket": "0.10.x",
+    "http-proxy": "^1.12.0",
     "open": "latest",
     "send": "latest",
-    "watchr": "2.3.x"
+    "watchr": "2.4.x"
   },
   "bin": {
     "jspm-server": "./jspm-server.js"
@@ -38,9 +38,9 @@
   "preferGlobal": true,
   "license": "MIT",
   "devDependencies": {
-    "babelify": "~6.0.2",
-    "browserify": "~9.0.7",
+    "babelify": "~7.2.0",
+    "browserify": "~12.0.1",
     "fkit": "^0.16.2",
-    "watchify": "~3.1.0"
+    "watchify": "~3.6.0"
   }
 }
