@@ -35,7 +35,7 @@ for (var i = process.argv.length-1; i >= 2; --i) {
 		process.argv.splice(i, 1);
 	}
 	else if (arg.indexOf("--only-exts=") > -1) {
-		var extensions = []
+		var extensions = [];
 		var extArgs = arg.substring(12);
 		extArgs = extArgs.replace(/\./g, '');
 		if(extArgs) {
@@ -47,7 +47,7 @@ for (var i = process.argv.length-1; i >= 2; --i) {
 		}
 	}
 	else if (arg.indexOf("--ignore-exts=") > -1) {
-		var extensions = []
+		var extensions = [];
 		var extArgs = arg.substring(14);
 		extArgs = extArgs.replace(/\./g, '');
 		if(extArgs) {
@@ -58,6 +58,10 @@ for (var i = process.argv.length-1; i >= 2; --i) {
 			process.argv.splice(i, 1);
 		}
 	}
+	else if (arg.indexOf("--ignore=") > -1) {
+		opts.ignore = arg.substring(9).split(",");
+		process.argv.splice(i, 1);
+	}
 	else if (arg == "--no-browser") {
 		opts.open = false;
 		process.argv.splice(i, 1);
@@ -65,13 +69,20 @@ for (var i = process.argv.length-1; i >= 2; --i) {
 		opts.logLevel = 0;
 		process.argv.splice(i, 1);
 	} else if (arg == "--help" || arg == "-h") {
-		console.log('Usage: jspm-server [-h|--help] [-q|--quiet] [--port=PORT] [--open=PATH] [--only-exts=EXTENSIONS] [--ignore-exts=EXTENSIONS] [--proxy=PROXY_PATH] [--no-browser] [PATH]');
+		console.log('Usage: jspm-server [-h|--help] [-q|--quiet] [--port=PORT] [--open=PATH] [--only-exts=EXTENSIONS] [--ignore-exts=EXTENSIONS] [--ignore=PATH] [--proxy=PROXY_PATH] [--no-browser] [PATH]');
 		process.exit();
 	}
 }
 
 if (process.argv[2]) {
 	process.chdir(process.argv[2]);
+}
+
+if (opts.ignore) {
+	var cwd = process.cwd();
+	opts.ignore = opts.ignore.map(function(relativePath) {
+		return path.join(cwd, relativePath);
+	});
 }
 
 liveServer.start(opts);

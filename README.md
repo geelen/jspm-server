@@ -27,6 +27,7 @@ Additional parameters:
 * `--proxy=http://localhost:8080` - proxy a running server
 * `--only-exts=""` - watch only files with the specified extensions
 * `--ignore-exts=""` - exclude files with the specified extensions
+* `--ignore=PATH` - comma-separated string of paths to ignore
 
 ## How it works
 
