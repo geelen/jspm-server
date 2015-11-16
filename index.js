@@ -94,15 +94,17 @@ LiveServer.start = function (options) {
   var host = options.host || '0.0.0.0';
   var port = options.port || 8080;
   var root = options.root || process.cwd();
-  var inclExtensions = options.inclExtensions || []
-  var exclExtensions = options.exclExtensions || []
+  var inclExtensions = options.inclExtensions || [];
+  var exclExtensions = options.exclExtensions || [];
+  var ignore = options.ignore || [];
+  ignore.push(/([\/\\]\.)|(node_modules)/);
   var logLevel = options.logLevel === undefined ? 2 : options.logLevel;
   var openPath = (options.open === undefined || options.open === true) ?
     "" : ((options.open === null || options.open === false) ? null : options.open);
   if (options.noBrowser) openPath = null; // Backwards compatibility with 0.7.0
-  var html5mode = fs.existsSync(root + "/200.html")
+  var html5mode = fs.existsSync(root + "/200.html");
   if (html5mode) {
-    console.log(("200.html detected, serving it for all URLs that have no '.' (html5mode)").yellow)
+    console.log(("200.html detected, serving it for all URLs that have no '.' (html5mode)").yellow);
   }
 
   var server;
@@ -177,12 +179,12 @@ LiveServer.start = function (options) {
         console.log(message.data.red);
       }
     }
-    clients.push(ws)
+    clients.push(ws);
   });
 
   // Setup file watcher
   chokidar.watch(root, {
-    ignored: /([\/\\]\.)|(node_modules)/,
+    ignored: ignore,
     ignoreInitial: true,
     ignorePermissionErrors: true
   }).on('all', function (event, filePathOrErr) {
@@ -193,15 +195,19 @@ LiveServer.start = function (options) {
       if (logLevel >= 1) console.log(("Change detected: " + relativePath).cyan);
 
       if(exclExtensions.length > 0 && exclExtensions.indexOf(path.extname(relativePath).replace(/\./g, '')) > -1) {
-        return false
+        return false;
       }
 
       if(inclExtensions.length > 0 && inclExtensions.indexOf(path.extname(relativePath).replace(/\./g, '')) < 0) {
-        return false
+        return false;
+      }
+
+      if(ignore.length > 0 && ignore.indexOf(relativePath) > -1) {
+        return false;
       }
 
       clients.forEach( function ( ws ) {
-        ws.send(JSON.stringify({type: 'change', path: relativePath}))
+        ws.send(JSON.stringify({type: 'change', path: relativePath}));
       })
     }
   });
