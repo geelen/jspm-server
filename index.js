@@ -97,6 +97,7 @@ LiveServer.start = function (options) {
   var inclExtensions = options.inclExtensions || [];
   var exclExtensions = options.exclExtensions || [];
   var ignore = options.ignore || [];
+  ignore.push(/([\/\\]\.)|(node_modules)/);
   var logLevel = options.logLevel === undefined ? 2 : options.logLevel;
   var openPath = (options.open === undefined || options.open === true) ?
     "" : ((options.open === null || options.open === false) ? null : options.open);
@@ -183,7 +184,7 @@ LiveServer.start = function (options) {
 
   // Setup file watcher
   chokidar.watch(root, {
-    ignored: /([\/\\]\.)|(node_modules)/,
+    ignored: ignore,
     ignoreInitial: true,
     ignorePermissionErrors: true
   }).on('all', function (event, filePathOrErr) {
