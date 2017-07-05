@@ -12,15 +12,15 @@
   ],
   "author": "Glen Maddern",
   "dependencies": {
-    "chokidar": "~1.0.1",
+    "chokidar": "~1.7.0",
     "colors": "latest",
     "connect": "2.x.x",
     "event-stream": "latest",
-    "faye-websocket": "0.9.x",
+    "faye-websocket": "0.11.x",
     "http-proxy": "^1.11.1",
     "open": "latest",
     "send": "latest",
-    "watchr": "2.3.x"
+    "watchr": "3.0.x"
   },
   "bin": {
     "jspm-server": "./jspm-server.js"
